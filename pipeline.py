@@ -23,7 +23,7 @@ OLLAMA_URL    = os.getenv("OLLAMA_URL", "http://localhost:11434/api/generate")
 OLLAMA_MODEL  = os.getenv("OLLAMA_MODEL", "gemma3:1b")
 PIPER_BIN     = os.getenv("PIPER_BIN", "C:\\AIDE\\pipeline\\piper\\piper\\piper.exe")
 PIPER_MODEL   = os.getenv("PIPER_MODEL", "C:\\AIDE\\pipeline\\models\\fr_FR-siwis-medium.onnx")
-SERVER_URL    = "http://localhost:3000"
+SERVER_URL = "http://localhost:8000"
 
 # --- Topics MQTT ---
 TOPIC_MIC     = "aide/micro/stream"
@@ -198,12 +198,15 @@ def on_message(client, userdata, msg):
             print("Bouton médicament")
         except: pass
 
-def on_connect(client, userdata, flags, rc):
-    print(f"Pipeline connecté au broker MQTT (rc={rc})")
-    client.subscribe(TOPIC_MIC)
-    client.subscribe(TOPIC_VITALS)
-    client.subscribe(TOPIC_PIR)
-    client.subscribe(TOPIC_BOUTON)
+def on_connect(client, userdata, flags, reason_code, properties=None):
+    if reason_code == 0:
+        print("Connecté au broker Mosquitto avec succès !")
+        client.subscribe(TOPIC_VITALS)
+        client.subscribe(TOPIC_ALERT)
+        client.subscribe(TOPIC_BOUTON)
+        print(f"Abonné aux sujets de ton architecture.")
+    else:
+        print(f"Échec de la connexion, code de retour : {reason_code}")
 
 # --- Démarrage ---
 # Serveur HTTP TTS sur port 8080
