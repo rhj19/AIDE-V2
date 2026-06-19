@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from typing import List, Optional
 from contextlib import asynccontextmanager
 import database  # Importation de votre fichier database.py
+from fastapi.middleware.cors import CORSMiddleware
 
 # --- GESTION DU DÉMARRAGE (Lifespan) ---
 # Ce bloc s'exécute automatiquement dès que le serveur uvicorn se lance
@@ -19,6 +20,13 @@ app = FastAPI(
     description="API centrale connectée à SQLite pour la gestion des patients",
     version="2.0.0",
     lifespan=lifespan
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # --- SCHÉMAS DE DONNÉES (Pydantic) ---
@@ -132,3 +140,13 @@ async def websocket_endpoint(websocket: WebSocket):
             await websocket.send_text(f"Serveur a reçu : {data}")
     except WebSocketDisconnect:
         print("Application Flutter déconnectée")
+
+# Route pour l'ESP32
+@app.get("/reminder")
+async def get_reminder():
+    return {"heure": 8, "minute": 0}
+
+# Route pour les vitaux
+@app.get("/vitals")
+async def get_vitals():
+    return {"bpm": 0, "spo2": 0}
